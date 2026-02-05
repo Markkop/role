@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  ArrowLeftRight,
   Box,
   CalendarDays,
   CheckLine,
@@ -1486,6 +1487,10 @@ export default function Home() {
                     const SectionIcon = getSectionIcon(section.id);
 
                     const isMuted = Boolean(card.isMuted);
+                    const cardKey = getCardKey(section.id, card.id);
+                    const isGenerating = Boolean(generatingCards[cardKey]);
+                    const cardPrompt = buildImageDescription(section, card);
+                    const canGenerate = Boolean(hasApiKey && cardPrompt.trim());
 
                     return (
                       <div
@@ -1509,16 +1514,52 @@ export default function Home() {
                         }`}
                         aria-pressed={isActive}
                       >
-                        <button
-                          type="button"
-                          aria-label="Toggle grayscale"
-                          title="Toggle grayscale"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            toggleCardMuted(section.id, card.id);
-                          }}
-                          className="absolute right-3 top-3 h-6 w-6 rounded-full bg-transparent opacity-0"
-                        />
+                        <div className="absolute right-3 top-3 z-10 flex flex-col items-end gap-2 opacity-0 pointer-events-none transition group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100">
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              generateImageForCard(section, card, { force: true });
+                            }}
+                            disabled={!canGenerate || isGenerating}
+                            aria-label="Generate image with AI"
+                            title={
+                              canGenerate
+                                ? "Generate image with AI"
+                                : "Add an API key and prompt to generate"
+                            }
+                            className={`flex h-8 w-8 items-center justify-center rounded-full border text-[color:var(--navy)] transition ${
+                              isGenerating
+                                ? "border-[color:var(--sea)] bg-[color:var(--sea)]/10 text-[color:var(--sea)]"
+                                : "border-[color:var(--navy)]/20 bg-white/80 hover:border-[color:var(--coral)] hover:text-[color:var(--coral)]"
+                            } ${!canGenerate || isGenerating ? "opacity-60" : ""}`}
+                          >
+                            {isGenerating ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <WandSparkles className="h-4 w-4" />
+                            )}
+                          </button>
+                          <button
+                            type="button"
+                            aria-label={
+                              isMuted ? "Remove grayscale filter" : "Apply grayscale filter"
+                            }
+                            title={isMuted ? "Remove grayscale filter" : "Apply grayscale filter"}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              toggleCardMuted(section.id, card.id);
+                            }}
+                            className={`flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] uppercase tracking-[0.25em] transition ${
+                              isMuted
+                                ? "border-[color:var(--sea)]/40 bg-[color:var(--sea)]/10 text-[color:var(--sea)]"
+                                : "border-[color:var(--navy)]/20 bg-white/80 text-[color:var(--navy)] hover:border-[color:var(--coral)] hover:text-[color:var(--coral)]"
+                            }`}
+                          >
+                            <ArrowLeftRight className="h-3 w-3" />
+                            <span>{isMuted ? "Color" : "Gray"}</span>
+                          </button>
+                        </div>
                         <div className="text-xs uppercase tracking-[0.25em] text-[color:var(--ink)]/60">
                           {card.type}
                         </div>
