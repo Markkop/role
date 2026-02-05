@@ -173,7 +173,7 @@ const initialSections: Section[] = [
     symbol: "EVNT",
     accent: "from-[color:var(--sea)] to-[color:var(--sun)]",
     baseStyle:
-      "Voxel diorama, wide interior corner scene, cinematic lighting, layered props, no main character, crisp blocks, cinematic haze, high detail.",
+      "Studio Ghibli-like storybook illustration, warm hand-painted watercolor feel, soft glowing light, whimsical props, wide interior scene, no main character, gentle film grain, high detail.",
     cards: [
       {
         id: "birthday",
@@ -238,7 +238,7 @@ const initialSections: Section[] = [
     symbol: "OBJ",
     accent: "from-[color:var(--navy)] to-[color:var(--coral)]",
     baseStyle:
-      "Voxel still life, centered object on a table, dramatic spotlight, clean background, crisp block geometry, realistic textures, high detail.",
+      "3D retro game style, low-poly PS1-era rendering, centered object on a table, dramatic spotlight, simple backdrop, subtle dithering, pixelated textures, high detail.",
     cards: [
       {
         id: "board-game",
@@ -303,7 +303,7 @@ const initialSections: Section[] = [
     symbol: "PLC",
     accent: "from-[color:var(--sun)] to-[color:var(--sea)]",
     baseStyle:
-      "Voxel environment, wide-angle corner view, no characters, layered depth, soft atmospheric light, crisp block geometry, high detail.",
+      "Anime-style background art, clean linework, soft cel shading, vibrant colors, wide-angle environment, no characters, layered depth, gentle atmospheric light, high detail.",
     cards: [
       {
         id: "mark-house",
