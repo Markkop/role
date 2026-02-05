@@ -174,7 +174,7 @@ const initialSections: Section[] = [
     symbol: "EVNT",
     accent: "from-[color:var(--sea)] to-[color:var(--sun)]",
     baseStyle:
-      "Studio Ghibli-like storybook illustration, warm hand-painted watercolor feel, soft glowing light, whimsical props, wide interior scene, no main character, gentle film grain, high detail.",
+      "Polaroid photo style, candid snapshot, soft flash, slightly faded colors, white border framing, subtle film grain, warm nostalgic feel, high detail.",
     cards: [
       {
         id: "birthday",
@@ -239,7 +239,7 @@ const initialSections: Section[] = [
     symbol: "OBJ",
     accent: "from-[color:var(--navy)] to-[color:var(--coral)]",
     baseStyle:
-      "3D retro game style, low-poly PS1-era rendering, centered object on a table, dramatic spotlight, simple backdrop, subtle dithering, pixelated textures, high detail.",
+      "3D retro game style, early 90s era rendering, extra low-poly geometry, low-res textures, subtle dithering, centered object on a table, dramatic spotlight, simple backdrop, high detail.",
     cards: [
       {
         id: "board-game",
@@ -304,7 +304,7 @@ const initialSections: Section[] = [
     symbol: "PLC",
     accent: "from-[color:var(--sun)] to-[color:var(--sea)]",
     baseStyle:
-      "Anime-style background art, clean linework, soft cel shading, vibrant colors, wide-angle environment, no characters, layered depth, gentle atmospheric light, high detail.",
+      "Minecraft-like world, chunky block geometry, pixelated textures, bright lighting, wide-angle environment, no characters, layered depth, high detail.",
     cards: [
       {
         id: "mark-house",
@@ -545,12 +545,50 @@ const buildShareUrl = (share: string) => {
   return url.toString();
 };
 
-const buildImageDescription = (section: Section, card: CardItem) => {
+const getRandomInt = (min: number, max: number) =>
+  Math.floor(Math.random() * (max - min + 1)) + min;
+
+const pickRandomItems = <T,>(items: T[], count: number) => {
+  const pool = [...items];
+  for (let i = pool.length - 1; i > 0; i -= 1) {
+    const swapIndex = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[swapIndex]] = [pool[swapIndex], pool[i]];
+  }
+  return pool.slice(0, count);
+};
+
+const buildEventCastPrompt = (sections: Section[]) => {
+  const characters = sections.find((section) => section.id === "characters");
+  const descriptions =
+    characters?.cards
+      .map((card) => card.description.trim())
+      .filter(Boolean) ?? [];
+
+  if (descriptions.length === 0) return "";
+
+  const max = descriptions.length;
+  const min = Math.min(4, max);
+  const count = getRandomInt(min, max);
+  const selected = pickRandomItems(descriptions, count);
+
+  return `Let's have ${count} people in there, they are:\n${selected.join("\n")}`;
+};
+
+const buildImageDescription = (
+  section: Section,
+  card: CardItem,
+  sections: Section[]
+) => {
   const base = section.baseStyle.trim();
   const detail = card.imageDetail.trim();
-  if (!base) return detail;
-  if (!detail) return base;
-  return `${base} ${detail}`;
+  const prompt = base && detail ? `${base} ${detail}` : base || detail;
+
+  if (section.id === "events") {
+    const castPrompt = buildEventCastPrompt(sections);
+    return castPrompt ? `${prompt}\n\n${castPrompt}` : prompt;
+  }
+
+  return prompt;
 };
 
 const sectionIconMap = {
@@ -733,7 +771,7 @@ export default function Home() {
 
   const activeCardKey = getCardKey(activeSection.id, activeCard.id);
   const isGeneratingActive = Boolean(generatingCards[activeCardKey]);
-  const fullPrompt = buildImageDescription(activeSection, activeCard);
+  const fullPrompt = buildImageDescription(activeSection, activeCard, sections);
   const hasApiKey = Boolean(aiSettings.apiKey.trim());
   const canGenerateActive = Boolean(hasApiKey && fullPrompt.trim());
   const isBatchRunning =
@@ -743,7 +781,7 @@ export default function Home() {
   const handleCopyDescription = async () => {
     try {
       await navigator.clipboard.writeText(
-        buildImageDescription(activeSection, activeCard)
+        buildImageDescription(activeSection, activeCard, sections)
       );
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1600);
@@ -757,7 +795,7 @@ export default function Home() {
     card: CardItem,
     options?: { force?: boolean }
   ) => {
-    const prompt = buildImageDescription(section, card);
+    const prompt = buildImageDescription(section, card, sections);
     if (!prompt.trim()) return;
     if (!aiSettings.apiKey.trim()) {
       setAiError("Add a Gemini API key to generate images.");
@@ -1489,7 +1527,11 @@ export default function Home() {
                     const isMuted = Boolean(card.isMuted);
                     const cardKey = getCardKey(section.id, card.id);
                     const isGenerating = Boolean(generatingCards[cardKey]);
-                    const cardPrompt = buildImageDescription(section, card);
+                    const cardPrompt = buildImageDescription(
+                      section,
+                      card,
+                      sections
+                    );
                     const canGenerate = Boolean(hasApiKey && cardPrompt.trim());
 
                     return (
